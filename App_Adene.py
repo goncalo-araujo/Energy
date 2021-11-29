@@ -15,13 +15,13 @@ import numpy as np
 # In[2]:
 
 
-X = pd.read_pickle("X_train.pkl")
+X = pd.read_pickle("./X_train.pkl")
 
 
 # In[3]:
 
 
-y = pd.read_pickle("y_train.pkl")
+y = pd.read_pickle("./y_train.pkl")
 
 
 # In[4]:
