@@ -193,19 +193,19 @@ st.write(round(prediction(df)[0]*df["Área útil"][0], 2), "kWh")
 st.write('---')
 
 
-# In[14]:
+# In[27]:
 
 
 st.header('Especifique o/os tipo/os de renovação')
 #up = st.selectbox("Tipo de renovação", ["Paredes", "Janelas", "Fonte da sua energia"])
-wall_checkbox = st.checkbox("Paredes", value=True)
-window_checkbox = st.checkbox("Janelas", value=True)
-energy_checkbox = st.checkbox("Águas quentes e sanitárias", value=True)
+wall_checkbox = st.checkbox("Paredes")
+window_checkbox = st.checkbox("Janelas")
+energy_checkbox = st.checkbox("Águas quentes e sanitárias")
 
 checkboxes = [wall_checkbox, window_checkbox, energy_checkbox]
 
 
-# In[15]:
+# In[28]:
 
 
 def upgrade_wall_features(checkbox):
@@ -251,7 +251,7 @@ wigf = upgrade_windowgt_features(window_checkbox)
 ef = upgrade_energy_features(energy_checkbox)
 
 
-# In[16]:
+# In[29]:
 
 
 def upgrade_wall_uvalue(selection):
@@ -267,7 +267,7 @@ def upgrade_wall_uvalue(selection):
         return 0.47 
 
 
-# In[17]:
+# In[30]:
 
 
 def upgrade_wall_df(checkbox):
@@ -297,55 +297,55 @@ def upgrade_energy_df(checkbox):
             return df["Águas quentes e sanitárias"]
 
 
-# In[18]:
+# In[31]:
 
 
 newdf = df.copy()
 
 
-# In[19]:
+# In[32]:
 
 
 newdf["U value parede"] = upgrade_wall_df(wall_checkbox)
 
 
-# In[20]:
+# In[33]:
 
 
 newdf["U value janela"] = upgrade_windowu_df(window_checkbox)
 
 
-# In[21]:
+# In[34]:
 
 
 newdf["Transmissividade do vidro"] = upgrade_windowgt_df(window_checkbox)
 
 
-# In[22]:
+# In[35]:
 
 
 newdf["Águas quentes e sanitárias"] = upgrade_energy_df(energy_checkbox)
 
 
-# In[23]:
+# In[36]:
 
 
 st.write('---')
 
 
-# In[24]:
+# In[37]:
 
 
 preds = [round(prediction(df)[0]*df["Área útil"][0], 2), round(prediction(newdf)[0]*df["Área útil"][0], 2)]
 
 
-# In[25]:
+# In[38]:
 
 
 st.bar_chart(preds)
 
 
-# In[26]:
+# In[39]:
 
 
 st.header('Previsão do novo consumo energético total anual')
