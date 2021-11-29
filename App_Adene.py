@@ -352,10 +352,10 @@ preds.set_axis(["Actual", "Após renovação"], axis=0, inplace=True)
 preds.set_axis(["kWh"], axis=1, inplace=True)
 
 
-# In[58]:
+# In[62]:
 
 
-#preds
+preds["kWh"][1]
 
 
 # In[49]:
@@ -364,12 +364,11 @@ preds.set_axis(["kWh"], axis=1, inplace=True)
 st.bar_chart(preds)
 
 
-# In[39]:
+# In[63]:
 
 
-st.header('Previsão do novo consumo energético total anual')
-st.write(round(prediction(newdf)[0], 2), "kWh/m2")
-st.write(round(prediction(newdf)[0]*df["Área útil"][0], 2), "kWh")
+savings = (preds["kWh"][0]-preds["kWh"][1])*0.15
+st.write("**Você poupa **", savings, "euros assumindo 1 kWh = 0.15 €")
 
 
 # In[ ]:
