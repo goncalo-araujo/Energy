@@ -330,7 +330,7 @@ newdf["Águas quentes e sanitárias"] = upgrade_energy_df(energy_checkbox)
 # In[40]:
 
 
-newdf
+#newdf
 
 
 # In[36]:
@@ -355,7 +355,7 @@ preds.set_axis(["kWh"], axis=1, inplace=True)
 # In[58]:
 
 
-preds
+#preds
 
 
 # In[49]:
