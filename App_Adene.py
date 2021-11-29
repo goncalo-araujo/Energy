@@ -327,19 +327,32 @@ newdf["Transmissividade do vidro"] = upgrade_windowgt_df(window_checkbox)
 newdf["Águas quentes e sanitárias"] = upgrade_energy_df(energy_checkbox)
 
 
+# In[40]:
+
+
+newdf
+
+
 # In[36]:
 
 
 st.write('---')
 
 
-# In[37]:
+# In[43]:
 
 
-preds = [round(prediction(df)[0]*df["Área útil"][0], 2), round(prediction(newdf)[0]*df["Área útil"][0], 2)]
+preds = pd.DataFrame([round(prediction(df)[0]*df["Área útil"][0], 2), round(prediction(newdf)[0]*df["Área útil"][0], 2)]).transpose()
 
 
-# In[38]:
+# In[48]:
+
+
+preds.set_axis(["Actual", "Após renovação"], axis=1)
+preds.set_axis(["kWh"])
+
+
+# In[49]:
 
 
 st.bar_chart(preds)
