@@ -345,11 +345,17 @@ st.write('---')
 preds = pd.DataFrame([round(prediction(df)[0]*df["Área útil"][0], 2), round(prediction(newdf)[0]*df["Área útil"][0], 2)]).transpose()
 
 
-# In[48]:
+# In[51]:
 
 
-preds.set_axis(["Actual", "Após renovação"], axis=1)
-preds.set_axis(["kWh"])
+preds.set_axis(["Actual", "Após renovação"], axis=1, inplace=True)
+preds.set_axis(["kWh"], inplace=True)
+
+
+# In[52]:
+
+
+#preds
 
 
 # In[49]:
