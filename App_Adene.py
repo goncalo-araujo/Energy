@@ -364,11 +364,11 @@ preds["kWh"][1]
 st.bar_chart(preds)
 
 
-# In[63]:
+# In[64]:
 
 
 savings = (preds["kWh"][0]-preds["kWh"][1])*0.15
-st.write("**Você poupa **", savings, "euros assumindo 1 kWh = 0.15 €")
+st.write("**Você poupa **", print(savings), "**euros assumindo 1 kWh = 0.15 €**")
 
 
 # In[ ]:
