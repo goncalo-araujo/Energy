@@ -29,7 +29,7 @@ y = pd.read_pickle("./y_train.pkl")
 
 #Here we import the ExtraTreesRegressor model from sklearn package, nad train it to fit pickled data.
 from sklearn.ensemble import ExtraTreesRegressor
-model = ExtraTreesRegressor(n_jobs=-1)
+model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
 model.fit(X,y)
 
 
