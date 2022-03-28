@@ -57,9 +57,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 
 #Here we import the ExtraTreesRegressor model from sklearn package, nad train it to fit pickled data.
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
+model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
 @st.cache
 def model_train():
-    model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
     model.fit(X_train,y_train)
 model_train()
 
