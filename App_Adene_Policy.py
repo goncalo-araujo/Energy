@@ -119,12 +119,6 @@ else:
 st.write(df)
 
 
-# In[86]:
-
-
-df
-
-
 # In[69]:
 
 
@@ -305,7 +299,7 @@ def opt_df(x):
 
 
 
-# In[92]:
+# In[93]:
 
 
 st.write("---")
@@ -315,7 +309,7 @@ st.write("full retrofit energy consumption, standard deviation, and cost:")
 st.write(str( round(opt_df(np.repeat(5, 20))[0], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(5, 20))[1], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(5, 20))[2], 2)) + " €")
 
 
-# In[34]:
+# In[94]:
 
 
 from platypus import NSGAII, SPEA2, IBEA, Problem, Integer
@@ -325,7 +319,7 @@ for i in range(len(df.index)):
     problem_types = np.append(problem_types, Integer(0, ncomb-1))
 
 
-# In[44]:
+# In[105]:
 
 
 st.header('Optimização')
@@ -339,7 +333,7 @@ n = st.number_input("Número de combinações a explorar pelo algoritmo", 50, 50
 st.write("---")
 
 
-# In[45]:
+# In[106]:
 
 
 problem = Problem(len(df.index), 3)
@@ -347,7 +341,7 @@ problem.types[:] = problem_types
 problem.function = opt_df
 
 
-# In[46]:
+# In[107]:
 
 
 def option_opt(option):
@@ -376,26 +370,26 @@ def option_opt(option):
             return print("No optimization selected")
 
 
-# In[47]:
+# In[108]:
 
 
 results = option_opt(option)
 
 
-# In[48]:
+# In[109]:
 
 
 results_df = pd.DataFrame(results).transpose()
 results_df.columns = ["Energy Consumption kWh/m2", "Standar Deviation kWh/m2", "total cost €"]
 
 
-# In[49]:
+# In[110]:
 
 
 results_df
 
 
-# In[50]:
+# In[111]:
 
 
 # x_IBEA = [s.objectives[0] for s in algorithm_IBEA.result]
@@ -406,7 +400,7 @@ results_df
 # IBEA_df.columns = ["Energy Consumption kWh/m2", "STD", "total cost €"]
 
 
-# In[51]:
+# In[112]:
 
 
 import plotly.graph_objects as go
@@ -436,7 +430,7 @@ fig.add_trace(go.Scatter3d(x = [opt_df(np.repeat(0, 20))[0]],
 st.plotly_chart(fig, use_container_width=True, sharing="streamlit")
 
 
-# In[52]:
+# In[113]:
 
 
 fig.show()
