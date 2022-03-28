@@ -16,7 +16,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 # In[2]:
 
 
-X = pd.read_pickle("./X.pkl").reset_index().drop("index", axis=1)#.drop("B_type", axis=1)
+X = pd.read_pickle("./X_train.pkl").reset_index().drop("index", axis=1)#.drop("B_type", axis=1)
 
 
 # In[3]:
@@ -28,7 +28,7 @@ X = pd.read_pickle("./X.pkl").reset_index().drop("index", axis=1)#.drop("B_type"
 # In[4]:
 
 
-y = pd.read_pickle("./y.pkl")
+y = pd.read_pickle("./y_train.pkl")
 
 
 # In[5]:
