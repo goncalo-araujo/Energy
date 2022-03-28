@@ -60,7 +60,7 @@ from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
 model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
 @st.cache
 def model_train():
-    model.fit(X_train,y_train)
+    return model.fit(X_train,y_train)
 model_train()
 
 
