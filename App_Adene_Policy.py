@@ -307,12 +307,6 @@ full_retro = [round(opt_df(np.repeat(5, 20))[0], 2),
                          round(opt_df(np.repeat(5, 20))[2], 2)]
 
 
-# In[130]:
-
-
-original
-
-
 # In[93]:
 
 
