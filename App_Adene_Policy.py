@@ -56,6 +56,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 
 
 #Here we import the ExtraTreesRegressor model from sklearn package, nad train it to fit pickled data.
+@st.cache
 from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
 model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
 model.fit(X_train,y_train)
@@ -293,10 +294,21 @@ def opt_df(x):
 
 
 
-# In[ ]:
+# In[129]:
 
 
+original = [round(opt_df(np.repeat(0, 20))[0], 2), 
+            round(opt_df(np.repeat(0, 20))[1], 2), 
+            round(opt_df(np.repeat(0, 20))[2], 2)]
+full_retro = [round(opt_df(np.repeat(5, 20))[0], 2), 
+                         round(opt_df(np.repeat(5, 20))[1], 2), 
+                         round(opt_df(np.repeat(5, 20))[2], 2)]
 
+
+# In[130]:
+
+
+original
 
 
 # In[93]:
@@ -319,7 +331,7 @@ for i in range(len(df.index)):
     problem_types = np.append(problem_types, Integer(0, ncomb-1))
 
 
-# In[105]:
+# In[135]:
 
 
 st.header('Optimização')
@@ -329,11 +341,11 @@ option = st.radio('Selecione o algoritmo de optimização:',
                    'NSGAII',
                    'SPEA2',
                    'IBEA'])
-n = st.number_input("Número de combinações a explorar pelo algoritmo", 50, 50000, 100)
+n = st.number_input("Número de combinações a explorar pelo algoritmo", 50, 50000, 500)
 st.write("---")
 
 
-# In[106]:
+# In[136]:
 
 
 problem = Problem(len(df.index), 3)
@@ -341,7 +353,7 @@ problem.types[:] = problem_types
 problem.function = opt_df
 
 
-# In[107]:
+# In[137]:
 
 
 def option_opt(option):
@@ -370,26 +382,26 @@ def option_opt(option):
             return print("No optimization selected")
 
 
-# In[108]:
+# In[138]:
 
 
 results = option_opt(option)
 
 
-# In[109]:
+# In[139]:
 
 
 results_df = pd.DataFrame(results).transpose()
 results_df.columns = ["Energy Consumption kWh/m2", "Standar Deviation kWh/m2", "total cost €"]
 
 
-# In[110]:
+# In[140]:
 
 
 results_df
 
 
-# In[111]:
+# In[141]:
 
 
 # x_IBEA = [s.objectives[0] for s in algorithm_IBEA.result]
@@ -400,7 +412,7 @@ results_df
 # IBEA_df.columns = ["Energy Consumption kWh/m2", "STD", "total cost €"]
 
 
-# In[112]:
+# In[142]:
 
 
 import plotly.graph_objects as go
@@ -420,8 +432,18 @@ fig = fig.add_trace(go.Scatter3d(x = results_df["Energy Consumption kWh/m2"],
 fig.add_trace(go.Scatter3d(x = [opt_df(np.repeat(0, 20))[0]],
                             y = [opt_df(np.repeat(0, 20))[1]],
                             z = [opt_df(np.repeat(0, 20))[2]],
-                            name = i,
-                            opacity = 0.5,
+                            name = "original",
+                            opacity = 1,
+                            mode = "markers",
+                            marker = dict(size = 0),
+                            #alphahull = -1,
+                            showlegend= True))
+
+fig.add_trace(go.Scatter3d(x = [full_retro[0]],
+                            y =[full_retro[1]],
+                            z = [full_retro[2]],
+                            name = "Full retrofit",
+                            opacity = 1,
                             mode = "markers",
                             marker = dict(size = 0),
                             #alphahull = -1,
@@ -430,7 +452,7 @@ fig.add_trace(go.Scatter3d(x = [opt_df(np.repeat(0, 20))[0]],
 st.plotly_chart(fig, use_container_width=True, sharing="streamlit")
 
 
-# In[113]:
+# In[143]:
 
 
 fig.show()
