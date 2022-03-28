@@ -57,7 +57,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 
 #Here we import the ExtraTreesRegressor model from sklearn package, nad train it to fit pickled data.
 @st.cache
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
+from sklearn.ensemble import ExtraTreesRegressor
 model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
 model.fit(X_train,y_train)
 
@@ -277,7 +277,7 @@ def opt_df(x):
         newdf["cost"].iloc[i[0]] = arr[i[1]][1][2]*newdf["Window_area"].iloc[i[0]] + arr[i[1]][0][1]*newdf["Wall_area"].iloc[i[0]]
         if newdf["Wall_average_U_value"].iloc[i[0]] == 0 or newdf["Wall_average_U_value"].iloc[i[0]] > df["Wall_average_U_value"].iloc[i[0]]:
             newdf["Wall_average_U_value"].iloc[i[0]] = df["Wall_average_U_value"].iloc[i[0]]
-            
+
         if newdf["Window_average_U_value"].iloc[i[0]] == 0 or newdf["Window_average_U_value"].iloc[i[0]] > df["Window_average_U_value"].iloc[i[0]]:
             newdf["Window_average_U_value"].iloc[i[0]] = df["Window_average_U_value"].iloc[i[0]]
             newdf["gT"].iloc[i[0]] = df["gT"].iloc[i[0]]
@@ -297,11 +297,11 @@ def opt_df(x):
 # In[129]:
 
 
-original = [round(opt_df(np.repeat(0, 20))[0], 2), 
-            round(opt_df(np.repeat(0, 20))[1], 2), 
+original = [round(opt_df(np.repeat(0, 20))[0], 2),
+            round(opt_df(np.repeat(0, 20))[1], 2),
             round(opt_df(np.repeat(0, 20))[2], 2)]
-full_retro = [round(opt_df(np.repeat(5, 20))[0], 2), 
-                         round(opt_df(np.repeat(5, 20))[1], 2), 
+full_retro = [round(opt_df(np.repeat(5, 20))[0], 2),
+                         round(opt_df(np.repeat(5, 20))[1], 2),
                          round(opt_df(np.repeat(5, 20))[2], 2)]
 
 
@@ -459,7 +459,3 @@ fig.show()
 
 
 # In[ ]:
-
-
-
-
