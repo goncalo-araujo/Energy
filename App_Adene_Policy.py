@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[56]:
 
 
 #Import required packages from python library
@@ -13,25 +13,25 @@ import numpy as np
 pd.options.mode.chained_assignment = None  # default='warn'
 
 
-# In[2]:
+# In[57]:
 
 
 X = pd.read_pickle("./X_train.pkl").reset_index().drop("index", axis=1)#.drop("B_type", axis=1)
 
 
-# In[3]:
+# In[58]:
 
 
 #X
 
 
-# In[4]:
+# In[59]:
 
 
 y = pd.read_pickle("./y_train.pkl")
 
 
-# In[5]:
+# In[60]:
 
 
 # X["f_area"] = X["f_area"].apply(log)
@@ -45,14 +45,14 @@ y = pd.read_pickle("./y_train.pkl")
 # X["gT"] = X["gT"].apply(log)
 
 
-# In[6]:
+# In[61]:
 
 
 from sklearn.model_selection import train_test_split,_validation
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=101)
 
 
-# In[7]:
+# In[62]:
 
 
 #Here we import the ExtraTreesRegressor model from sklearn package, nad train it to fit pickled data.
@@ -61,13 +61,13 @@ model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
 model.fit(X_train,y_train)
 
 
-# In[8]:
+# In[63]:
 
 
 from sklearn.metrics import r2_score,mean_squared_error
 
 
-# In[9]:
+# In[64]:
 
 
 def evaluate(model, test_features, test_labels):
@@ -81,7 +81,7 @@ def evaluate(model, test_features, test_labels):
     print('R2 Score = {:0.2f}'.format(r2_score(test_labels, predictions)))
 
 
-# In[10]:
+# In[65]:
 
 
 st.write("Model Performance")
@@ -90,7 +90,7 @@ st.write("Accuracy = 73.62%")
 st.write("R2 Score = 0.71")
 
 
-# In[11]:
+# In[66]:
 
 
 st.write("""
@@ -101,14 +101,14 @@ Esta app prevê o consumo energético de multiplos edificios em Lisboa, de acord
 st.write("---")
 
 
-# In[12]:
+# In[67]:
 
 
 # Sidebar
 # Header of Specify Input Parameters
 
 
-# In[13]:
+# In[68]:
 
 
 spectra = st.file_uploader("upload file", type={"csv", "txt"})
@@ -119,7 +119,13 @@ else:
 st.write(df)
 
 
-# In[14]:
+# In[86]:
+
+
+df
+
+
+# In[69]:
 
 
 # wt = ["perfil em aço galvanizado 15 cm, isolamento com 2 painéis (2x6) cm, painel OSB 1.1 cm,  EPS 4 cm",
@@ -129,7 +135,7 @@ st.write(df)
 #                   "Alvenaria de tijolo (15+11) cm com caixa de ar de 7 cm parcialmente preenchida (4 cm XPS)"]
 
 
-# In[15]:
+# In[70]:
 
 
 # st.header('Especifique o/os tipo/os de renovação para optimização')
@@ -140,7 +146,7 @@ st.write(df)
 # st.write("---")
 
 
-# In[16]:
+# In[71]:
 
 
 st.write("Introduza o U-value da(s) nova(s) parede(s):")
@@ -164,7 +170,7 @@ st.write("Introduza o preço/m2 respectivo da(s) nova(s) caixilharia(s):")
 pwif = st.text_input("Preços respectivos", "75, 100")
 
 
-# In[17]:
+# In[72]:
 
 
 wall_inputs = wf.split(",")
@@ -174,7 +180,7 @@ for i in enumerate(wall_inputs):
 #floats_walls_u
 
 
-# In[18]:
+# In[73]:
 
 
 wall_prices = pwf.split(",")
@@ -184,7 +190,7 @@ for i in enumerate(wall_prices):
 #floats_walls_prices
 
 
-# In[19]:
+# In[74]:
 
 
 window_inputs_u = wif.split(",")
@@ -194,7 +200,7 @@ for i in enumerate(window_inputs_u):
 #floats_windows_u
 
 
-# In[20]:
+# In[75]:
 
 
 window_inputs_gt = wif2.split(",")
@@ -204,7 +210,7 @@ for i in enumerate(window_inputs_gt):
 #floats_windows_gt
 
 
-# In[21]:
+# In[76]:
 
 
 window_prices = pwif.split(",")
@@ -214,14 +220,14 @@ for i in enumerate(window_prices):
 #floats_windows_prices
 
 
-# In[22]:
+# In[77]:
 
 
 ncomb = len(floats_windows_u)*len(floats_walls_u)
 #ncomb
 
 
-# In[23]:
+# In[78]:
 
 
 floats_windows= []
@@ -229,14 +235,14 @@ for i in enumerate(floats_windows_u):
     floats_windows = np.append(floats_windows, [floats_windows_u[i[0]], floats_windows_gt[i[0]], floats_windows_prices[i[0]]])
 
 
-# In[24]:
+# In[79]:
 
 
 floats_windows = floats_windows.reshape(len(floats_windows_u), 3)
 #floats_windows
 
 
-# In[25]:
+# In[80]:
 
 
 floats_walls = []
@@ -244,41 +250,41 @@ for i in enumerate(floats_walls_u):
     floats_walls = np.append(floats_walls, [floats_walls_u[i[0]], floats_walls_prices[i[0]]])
 
 
-# In[26]:
+# In[81]:
 
 
 floats_walls = floats_walls.reshape(len(floats_walls_u), 2)
 #floats_walls
 
 
-# In[27]:
+# In[82]:
 
 
 arr = [[e1, e2] for e1 in floats_walls for e2 in floats_windows]
 
 
-# In[28]:
+# In[91]:
 
 
 #arr
 
 
-# In[31]:
+# In[89]:
 
 
 def opt_df(x):
     newdf = df.copy()
     newdf["cost"] = np.repeat(0, len(x))
     for i in enumerate(x):
-        newdf["Wall_average_U-value"].iloc[i[0]] = arr[i[1]][0][0]
-        newdf["Window_average_U-value"].iloc[i[0]] = arr[i[1]][1][0]
+        newdf["Wall_average_U_value"].iloc[i[0]] = arr[i[1]][0][0]
+        newdf["Window_average_U_value"].iloc[i[0]] = arr[i[1]][1][0]
         newdf["gT"].iloc[i[0]] = arr[i[1]][1][1]
         newdf["cost"].iloc[i[0]] = arr[i[1]][1][2]*newdf["Window_area"].iloc[i[0]] + arr[i[1]][0][1]*newdf["Wall_area"].iloc[i[0]]
-        if newdf["Wall_average_U-value"].iloc[i[0]] == 0 or newdf["Wall_average_U-value"].iloc[i[0]] > df["Wall_average_U-value"].iloc[i[0]]:
-            newdf["Wall_average_U-value"].iloc[i[0]] = df["Wall_average_U-value"].iloc[i[0]]
+        if newdf["Wall_average_U_value"].iloc[i[0]] == 0 or newdf["Wall_average_U_value"].iloc[i[0]] > df["Wall_average_U_value"].iloc[i[0]]:
+            newdf["Wall_average_U_value"].iloc[i[0]] = df["Wall_average_U_value"].iloc[i[0]]
             
-        if newdf["Window_average_U-value"].iloc[i[0]] == 0 or newdf["Window_average_U-value"].iloc[i[0]] > df["Window_average_U-value"].iloc[i[0]]:
-            newdf["Window_average_U-value"].iloc[i[0]] = df["Window_average_U-value"].iloc[i[0]]
+        if newdf["Window_average_U_value"].iloc[i[0]] == 0 or newdf["Window_average_U_value"].iloc[i[0]] > df["Window_average_U_value"].iloc[i[0]]:
+            newdf["Window_average_U_value"].iloc[i[0]] = df["Window_average_U_value"].iloc[i[0]]
             newdf["gT"].iloc[i[0]] = df["gT"].iloc[i[0]]
     mean = np.mean(model.predict(newdf.drop("cost", axis=1)))
     #predictions = model.predict(newdf.drop("cost", axis=1))
@@ -299,10 +305,14 @@ def opt_df(x):
 
 
 
-# In[32]:
+# In[92]:
 
 
-opt_df(np.repeat(2, 20))
+st.write("---")
+st.write("original energy consumption, standard deviation, and cost:")
+st.write(opt_df(np.repeat(0, 20)))
+st.write("full retrofit energy consumption, standard deviation, and cost:")
+st.write(opt_df(np.repeat(5, 20)))
 
 
 # In[34]:
@@ -321,7 +331,7 @@ for i in range(len(df.index)):
 st.header('Optimização')
 #up = st.selectbox("Tipo de renovação", ["Paredes", "Janelas", "Fonte da sua energia"])
 option = st.radio('Selecione o algoritmo de optimização:',
-                  ["No optimization",
+                  [#"No optimization",
                    'NSGAII',
                    'SPEA2',
                    'IBEA'])
