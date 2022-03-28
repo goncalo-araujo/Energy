@@ -309,10 +309,10 @@ def opt_df(x):
 
 
 st.write("---")
-st.write("original energy consumption, standard deviation, and cost:")
-st.write(opt_df(np.repeat(0, 20)))
+st.write("original average energy consumption, standard deviation, and total retrofit cost:")
+st.write(str( round(opt_df(np.repeat(0, 20))[0], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(0, 20))[1], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(0, 20))[2], 2)) + " €")
 st.write("full retrofit energy consumption, standard deviation, and cost:")
-st.write(opt_df(np.repeat(5, 20)))
+st.write(str( round(opt_df(np.repeat(5, 20))[0], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(5, 20))[1], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(5, 20))[2], 2)) + " €")
 
 
 # In[34]:
