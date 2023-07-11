@@ -45,7 +45,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y["Ntc Valor"], test_size
 
 
 with st.spinner("""This is an early design stage simulator and does not represent accurate design execution stage simulations"""):
-    @st.cache_resource()  # 👈 Added this
+    @st.cache_resource  # 👈 Added this
     def ntc_():
         return model.fit(X_train, y_train)
     
