@@ -49,7 +49,7 @@ with st.spinner("""This is an early design stage simulator and does not represen
     def ntc_():
         return model.fit(X_train, y_train)
     
-    et_ntc = ntc_()
+et_ntc = ntc_()
 
 
 # In[7]:
