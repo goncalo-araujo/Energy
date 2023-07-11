@@ -1,0 +1,7 @@
+,Tipo de Solução,ID Certificado,Coeficiente Solução,Coeficiente Referência,Psi Solução,Psi Referência,Comprimento,Area Total Envolvente,Solution
+0,0,1447732.206,0.58954291,0.395781456,0.009042419,0,0,65.07257639,Horizontal roof with exterior insulation 
+1,1,1470060.102,0.631542793,0.410798635,0.009247911,0,0,60.86872163,Horizontal roof with interior insulation
+2,2,1374792.448,2.274350969,0.396351883,0.008271643,0,0,54.98188361,Horizontal roof without insulation
+3,3,1436506.908,0.833207765,0.391177073,0.008596378,0,0,61.78659775,Sloped roof with insulation on slopes
+4,4,1420055.146,1.183601924,0.396688633,0.009033613,0,0,82.52588679,Sloped roof with slab insulation
+5,5,1408517.57,2.926999906,0.393428749,0.007776013,0,0,58.82799504,Sloped roof without insulation

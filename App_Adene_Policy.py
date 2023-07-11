@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[56]:
+# In[1]:
 
 
 #Import required packages from python library
@@ -13,443 +13,738 @@ import numpy as np
 pd.options.mode.chained_assignment = None  # default='warn'
 
 
-# In[57]:
+# In[2]:
 
 
-X = pd.read_pickle("./X_train.pkl").reset_index().drop("index", axis=1)#.drop("B_type", axis=1)
+data = pd.read_csv("data.csv").drop("Unnamed: 0", axis=1)
 
 
-# In[58]:
+# In[3]:
 
 
-#X
+X = data.drop(["R", "Ntc Valor", "Nic Valor", "Nvc Valor", "EPC", "TARGET", "Ntc Limite", "walls_u", "roofs_u", "floors_u", "window_u"], axis=1)
+y = data[["R", "Ntc Valor", "Nic Valor", "Nvc Valor", "Ntc Limite"]]
 
 
-# In[59]:
+# In[4]:
 
 
-y = pd.read_pickle("./y_train.pkl")
-
-
-# In[60]:
-
-
-# X["f_area"] = X["f_area"].apply(log)
-# X["f_height"] = X["f_height"].apply(log)
-# X["Wall_area"] = X["Wall_area"].apply(log)
-# X["Wall_average_U-value"] = X["Wall_average_U-value"].apply(log)
-# X["Window_area"] = X["Window_area"].apply(log)
-# X["wwr"] = X["wwr"].apply(log)
-# X["Window_average_U-value"] = X["Window_average_U-value"].apply(log)
-# X["gtvi"] = X["gtvi"].apply(log)
-# X["gT"] = X["gT"].apply(log)
-
-
-# In[61]:
-
-
-from sklearn.model_selection import train_test_split,_validation
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=101)
-
-
-# In[145]:
-
-
-#Here we import the ExtraTreesRegressor model from sklearn package, nad train it to fit pickled data.
-
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor
+from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score
 model = ExtraTreesRegressor(n_jobs=-1, random_state=42)
-model.fit(X_train,y_train)
 
 
-# In[63]:
+# In[5]:
 
 
-from sklearn.metrics import r2_score,mean_squared_error
+X_train, X_test, y_train, y_test = train_test_split(X, y["Ntc Valor"], test_size=0.33, random_state=42)
 
 
-# In[64]:
+# In[6]:
 
 
-def evaluate(model, test_features, test_labels):
-    predictions = model.predict(test_features)
-    errors = np.sqrt(mean_squared_error(test_labels, predictions))
-    mape = 100 * np.mean(errors / test_labels)
-    accuracy = 100 - mape
-    print('Model Performance')
-    print('Average Error: {:0.4f} kWh/m2.'.format(np.mean(errors)))
-    print('Accuracy = {:0.2f}%.'.format(accuracy))
-    print('R2 Score = {:0.2f}'.format(r2_score(test_labels, predictions)))
+with st.spinner("""This is an early design stage simulator and does not represent accurate design execution stage simulations"""):
+    @st.cache_resource()  # 👈 Added this
+    def ntc_():
+        return model.fit(X_train, y_train)
+    
+et_ntc = ntc_()
 
 
-# In[65]:
+# In[7]:
 
 
-st.write("Model Performance")
-st.write(" Average Error: 27.9629 kWh/m2.")
-st.write("Accuracy = 73.62%")
-st.write("R2 Score = 0.71")
+preds = et_ntc.predict(X_test)
 
 
-# In[66]:
+# In[8]:
+
+
+def period_to_epoch(x):
+    if pd.isna(x) == True:
+        return "is null"
+    if x == "before 1918":
+        return 0
+    if x == "between 1919 and 1945":
+        return 1
+    if x== "between 1946 andnd 1960":
+        return 2
+    if x== "between 1961 and 1970":
+        return 3
+    if x== "between 1971 and 1980":
+        return 4
+    if x== "between 1981 and 1990":
+        return 5
+    if x== "between 1991 and 1995":
+        return 6
+    if x== "between 1996 and 2000":
+        return 7
+    if x== "between 2001 and 2005":
+        return 8
+    else:
+        return 9
+
+
+# In[9]:
+
+
+def epochs_to_period(x):
+    if x == 0:
+        return "before 1918"
+    if x == 1:
+        return "between 1919 and 1945"
+    if x== 2:
+        return "between 1946 and 1960"
+    if x== 3:
+        return "between 1961 and 1970"
+    if x== 4:
+        return "between 1971 and 1980"
+    if x== 5:
+        return "between 1981 and 1990"
+    if x== 6:
+        return "between 1991 and 1995"
+    if x== 7:
+        return "between 1996 and 2000"
+    if x== 8:
+        return "between 2001 and 2005"
+    else:
+        return "Posterior and 2005"
+
+
+# In[10]:
+
+
+period_df = pd.DataFrame([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+period_df["label"] = period_df[0].apply(epochs_to_period)
+period_df.columns=["Code", "Period of Construction"]
+
+
+# In[11]:
+
+
+typology_type = ['> T6', 'T0', 'T1', 'T2', 'T3', 'T4', 'T5', 'T6']
+typology_labels = [0, 1, 2, 3, 4, 5, 6, 7]
+typology_df = pd.DataFrame([typology_labels, typology_type]).T.apply(np.roll, shift=-1)
+
+
+# In[12]:
+
+
+epc_type = ['Building', 'Fraction (without horizontal property)', 'Fraction (horizontal property)']
+epc_type_labels = [0,1, 2]
+epc_type_df = pd.DataFrame([epc_type_labels, epc_type]).T
+epc_type_df.columns = ["Code", "Tipo de Imóvel"]
+
+
+# In[13]:
+
+
+district_types = pd.read_csv("disctrict_types.csv").drop("Unnamed: 0", axis=1)
+district_types.columns = ["Code", "Distrito"]
+
+
+# In[14]:
+
+
+wall_types = pd.read_csv("wall_types.csv")
+roof_types = pd.read_csv("roof_types.csv")
+floor_types = pd.read_csv("floors_types.csv")
+window_types = pd.read_csv("window_types.csv")
+
+
+# In[15]:
+
+
+ac_sources = pd.read_csv("ac_sources.csv").iloc[:12]
+ac_types = pd.read_csv("ac_types.csv").iloc[:16]
+
+dhw_sources = pd.read_csv("dhw_sources.csv")
+dhw_types = pd.read_csv("dhw_types.csv")
+
+
+# In[16]:
+
+
+sample = X_test.sample(10).reset_index(drop=True)
+
+
+# In[17]:
 
 
 st.write("""
-# Consumo energético de edificios em Lisboa
+# Lisbon Building energy use optimizer for public policies
 
-Esta app prevê o consumo energético de multiplos edificios em Lisboa, de acordo com os seus parametros
+This app allows the user to upload a csv file with multiple buildings and their respective characteristics and optimize their retrofit.
+
 """)
 st.write("---")
 
 
-# In[67]:
+# In[18]:
 
 
-# Sidebar
-# Header of Specify Input Parameters
+@st.cache_data
+def convert_example(df):
+    return df.to_csv().encode('utf-8')
+
+example = convert_example(sample)
+
+st.download_button(
+    label="Download template input .csv",
+    data=example,
+    file_name='template_upload.csv',
+    mime='text/csv',)
+
+st.dataframe(sample)
+st.write("---")
 
 
-# In[68]:
+# In[19]:
 
 
-spectra = st.file_uploader("upload file", type={"csv", "txt"})
-if spectra is not None:
-    df = pd.read_csv(spectra)
+st.write("""
+## Column codes for building features:
+Here you can check the respective code number for each categorical building feature
+""")
+
+
+# In[20]:
+
+
+col_district, col_type, col_typology = st.columns(3)
+
+col_district.write(""" ### Distrito""")
+col_district.dataframe(district_types)
+
+col_type.write(""" ### Tipo de Imóvel""")
+col_type.dataframe(epc_type_df)
+
+col_typology.write(""" ### Tipologia""")
+col_typology.dataframe(typology_df)
+
+
+# In[21]:
+
+
+wall_df = wall_types[["Tipo de Solução", "Solution"]]
+wall_df.columns = ["Code", "Wall Solution"]
+
+
+# In[22]:
+
+
+roof_df = roof_types[["Tipo de Solução", "Solution"]]
+roof_df.columns = ["Code", "Roof Solution"]
+
+
+# In[23]:
+
+
+col_epoch, col_walls, col_roofs = st.columns(3)
+
+col_epoch.write(""" ### epoch""")
+col_epoch.dataframe(period_df)
+
+col_walls.write(""" ### walls_type""")
+col_walls.dataframe(wall_df)
+
+col_roofs.write(""" ### roofs_type""")
+col_roofs.dataframe(roof_df)
+
+
+# In[24]:
+
+
+floor_df = floor_types[["Tipo de Solução", "solution"]]
+floor_df.columns = ["Code", "Floor Solution"]
+
+
+# In[25]:
+
+
+window_df = window_types[["labels", "Tipo de Solução 1"]]
+window_df.columns = ["Code", "Window Solution"]
+
+
+# In[26]:
+
+
+ac_sources.columns= ["Code", "Climatization Energy Source"]
+
+
+# In[27]:
+
+
+col_floors, col_window, col_acs = st.columns(3)
+
+col_floors.write(""" ### floors_type""")
+col_floors.dataframe(floor_df)
+
+col_window.write(""" ### window_type""")
+col_window.dataframe(window_df)
+
+col_acs.write(""" ### ac_source""")
+col_acs.dataframe(ac_sources)
+
+
+# In[28]:
+
+
+ac_types.columns = ["Code", "Climatization equipment"]
+
+
+# In[29]:
+
+
+dhw_sources.columns = ["Code", "Domestic Hot Water energy source"]
+
+
+# In[30]:
+
+
+dhw_types.columns = ["Code", "Domestic Hot Water equipment"]
+
+
+# In[31]:
+
+
+col_ace, col_dhws, col_dhwe = st.columns(3)
+
+col_ace.write(""" ### ac_equipment""")
+col_ace.dataframe(ac_types)
+
+col_dhws.write(""" ### dhw_source""")
+col_dhws.dataframe(dhw_sources)
+
+col_dhwe.write(""" ### dhw_equipment""")
+col_dhwe.dataframe(dhw_types)
+
+
+# In[32]:
+
+
+st.write("""
+## Building data upload
+
+Here you can upload the .csv file filled in as shown in "template_upload.csv", but with your buildings
+""")
+
+
+# In[291]:
+
+
+upload = st.file_uploader("Input CSV file with all the buildings you want to optimize")
+
+
+# In[34]:
+
+
+@st.cache_data
+def read_csv(csv):
+    sampl_up = pd.read_csv(csv).drop("Unnamed: 0", axis=1)
+    return sampl_up
+
+if upload != None:
+    sample = read_csv(upload)
+    preds = et_ntc.predict(sample)
 else:
-    df = X.sample(20).reset_index().drop("index", axis=1)
-st.write(df)
+    preds = et_ntc.predict(sample)
 
 
-# In[69]:
+# In[35]:
 
 
-# wt = ["perfil em aço galvanizado 15 cm, isolamento com 2 painéis (2x6) cm, painel OSB 1.1 cm,  EPS 4 cm",
-#                   "ETIC: tijolo de 22 cm, poliestireno moldado expandido de 6 cm, revestimento em reboco armado de 2 cm",
-#                   "Fachada ventilada: tijolo de 22 cm,  isolamento térmico (4 cm XPS), e caixa de ar ventilada de 3 cm",
-#                   "Alvenaria de tijolo (11+11) cm com caixa de ar de 7 cm parcialmente preenchida (4 cm XPS)",
-#                   "Alvenaria de tijolo (15+11) cm com caixa de ar de 7 cm parcialmente preenchida (4 cm XPS)"]
+col_a, col_b, col_c = st.columns(3)
+simulate_button = col_b.button('Predict annual energy loads')
 
+import plotly.express as px
+if simulate_button == True:
 
-# In[70]:
+    df = pd.DataFrame(preds)
+    df.columns = ["Energy (kWh/sqm)"]
+    fig = px.histogram(df, x="Energy (kWh/sqm)", color_discrete_sequence=['indianred'])
+    st.plotly_chart(fig)
+    col_a1, col_c1 = st.columns(2)
+    col_a1.metric("Average building Energy needs:", str(round(np.average(preds), 2)) + " kWh/sqm")
+    col_c1.metric("Standard deviation:", str(round(np.std(preds), 2)) + " kWh/sqm")
+    #fig.show()
 
 
-# st.header('Especifique o/os tipo/os de renovação para optimização')
-# #up = st.selectbox("Tipo de renovação", ["Paredes", "Janelas", "Fonte da sua energia"])
-# wall_checkbox = st.checkbox("Paredes", True)
-# window_checkbox = st.checkbox("Janelas", True)
+# In[36]:
 
-# st.write("---")
 
+retrofits = ["Wall insulation (EPS)", 
+            "Floor insulation", 
+            "Roof insulation (EPS)", 
+            "Window replacement (PVC)", 
+            "Air-to-water pump",
+            "Efficient AC units", 
+            "Solar panels for DHW", "Solar panels for energy production"]
 
-# In[71]:
 
-
-st.write("Introduza o U-value da(s) nova(s) parede(s):")
-wf = st.text_input("Wall U-Value", "0.179, 0.45, 0.50")
-
-
-st.write("Introduza o preço/m2 respectivo da(s) nova(s) parede(s):")
-pwf = st.text_input("Respective prices", "60, 30, 26")
-
-
-st.write("Introduza o U-value da(s) nova(s) janela(s):")
-wif = st.text_input("U-value da(s) janela(s)", "1.98, 0.95")
-
-
-st.write("Introduza a transmissividade do(s) novo(s) vidro(s):")
-wif2 = st.text_input("transmissividade(gT) do(s) vidro(s)", "0.70, 0.31")
-
-
-
-st.write("Introduza o preço/m2 respectivo da(s) nova(s) caixilharia(s):")
-pwif = st.text_input("Preços respectivos", "75, 100")
-
-
-# In[72]:
-
-
-wall_inputs = wf.split(",")
-floats_walls_u = [0]
-for i in enumerate(wall_inputs):
-    floats_walls_u = np.append(floats_walls_u, float(wall_inputs[i[0]]))
-#floats_walls_u
-
-
-# In[73]:
-
-
-wall_prices = pwf.split(",")
-floats_walls_prices = [0]
-for i in enumerate(wall_prices):
-    floats_walls_prices = np.append(floats_walls_prices, float(wall_prices[i[0]]))
-#floats_walls_prices
-
-
-# In[74]:
-
-
-window_inputs_u = wif.split(",")
-floats_windows_u = [0]
-for i in enumerate(window_inputs_u):
-    floats_windows_u = np.append(floats_windows_u, float(window_inputs_u[i[0]]))
-#floats_windows_u
-
-
-# In[75]:
-
-
-window_inputs_gt = wif2.split(",")
-floats_windows_gt = [0]
-for i in enumerate(window_inputs_gt):
-    floats_windows_gt = np.append(floats_windows_gt, float(window_inputs_gt[i[0]]))
-#floats_windows_gt
-
-
-# In[76]:
-
-
-window_prices = pwif.split(",")
-floats_windows_prices = [0]
-for i in enumerate(window_prices):
-    floats_windows_prices = np.append(floats_windows_prices, float(window_prices[i[0]]))
-#floats_windows_prices
-
-
-# In[77]:
-
-
-ncomb = len(floats_windows_u)*len(floats_walls_u)
-#ncomb
-
-
-# In[78]:
-
-
-floats_windows= []
-for i in enumerate(floats_windows_u):
-    floats_windows = np.append(floats_windows, [floats_windows_u[i[0]], floats_windows_gt[i[0]], floats_windows_prices[i[0]]])
-
-
-# In[79]:
-
-
-floats_windows = floats_windows.reshape(len(floats_windows_u), 3)
-#floats_windows
-
-
-# In[80]:
-
-
-floats_walls = []
-for i in enumerate(floats_walls_u):
-    floats_walls = np.append(floats_walls, [floats_walls_u[i[0]], floats_walls_prices[i[0]]])
-
-
-# In[81]:
-
-
-floats_walls = floats_walls.reshape(len(floats_walls_u), 2)
-#floats_walls
-
-
-# In[82]:
-
-
-arr = [[e1, e2] for e1 in floats_walls for e2 in floats_windows]
-
-
-# In[91]:
-
-
-#arr
-
-
-# In[89]:
-
-
-def opt_df(x):
-    newdf = df.copy()
-    newdf["cost"] = np.repeat(0, len(x))
-    for i in enumerate(x):
-        newdf["Wall_average_U_value"].iloc[i[0]] = arr[i[1]][0][0]
-        newdf["Window_average_U_value"].iloc[i[0]] = arr[i[1]][1][0]
-        newdf["gT"].iloc[i[0]] = arr[i[1]][1][1]
-        newdf["cost"].iloc[i[0]] = arr[i[1]][1][2]*newdf["Window_area"].iloc[i[0]] + arr[i[1]][0][1]*newdf["Wall_area"].iloc[i[0]]
-        if newdf["Wall_average_U_value"].iloc[i[0]] == 0 or newdf["Wall_average_U_value"].iloc[i[0]] > df["Wall_average_U_value"].iloc[i[0]]:
-            newdf["Wall_average_U_value"].iloc[i[0]] = df["Wall_average_U_value"].iloc[i[0]]
-            
-        if newdf["Window_average_U_value"].iloc[i[0]] == 0 or newdf["Window_average_U_value"].iloc[i[0]] > df["Window_average_U_value"].iloc[i[0]]:
-            newdf["Window_average_U_value"].iloc[i[0]] = df["Window_average_U_value"].iloc[i[0]]
-            newdf["gT"].iloc[i[0]] = df["gT"].iloc[i[0]]
-    mean = np.mean(model.predict(newdf.drop("cost", axis=1)))
-    #predictions = model.predict(newdf.drop("cost", axis=1))
-    std = np.std(model.predict(newdf.drop("cost", axis=1)))
-    costs = np.sum(newdf["cost"])
-    return [mean, std, costs]
-
-
-# In[ ]:
-
-
-
-
-
-# In[129]:
-
-
-original = [round(opt_df(np.repeat(0, 20))[0], 2), 
-            round(opt_df(np.repeat(0, 20))[1], 2), 
-            round(opt_df(np.repeat(0, 20))[2], 2)]
-full_retro = [round(opt_df(np.repeat(5, 20))[0], 2), 
-                         round(opt_df(np.repeat(5, 20))[1], 2), 
-                         round(opt_df(np.repeat(5, 20))[2], 2)]
-
-
-# In[93]:
+# In[37]:
 
 
 st.write("---")
-st.write("original average energy consumption, standard deviation, and total retrofit cost:")
-st.write(str( round(opt_df(np.repeat(0, 20))[0], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(0, 20))[1], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(0, 20))[2], 2)) + " €")
-st.write("full retrofit energy consumption, standard deviation, and cost:")
-st.write(str( round(opt_df(np.repeat(5, 20))[0], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(5, 20))[1], 2)) + " kWh/m2, " + str( round(opt_df(np.repeat(5, 20))[2], 2)) + " €")
+st.write(""" ## Optimization
+
+Here you can define the optimization problem variables, algorithm, and their parameters""")
+
+st.subheader("Variables")
+variables = st.multiselect("Select Retrofits from government's retrofit available funding list", 
+                            retrofits, default=retrofits)
 
 
-# In[94]:
+# In[174]:
 
 
-from platypus import NSGAII, SPEA2, IBEA, Problem, Integer
+st.subheader("Retrofit costs")
 
-problem_types = []
-for i in range(len(df.index)):
-    problem_types = np.append(problem_types, Integer(0, ncomb-1))
+if "Wall insulation (EPS)" in variables:
+    wall_cost = st.number_input("Wall retrofit cost (€/sqm)", 0, 500, 70)
 
+if "Floor insulation" in variables:
+    floor_cost = st.number_input("Floor retrofit cost (€/sqm)", 0, 500, 30)
+    
+if "Roof insulation (EPS)" in variables:
+    roof_cost = st.number_input("Roof retrofit cost (€/sqm)", 0, 500, 30)
 
-# In[135]:
+if "Window replacement (PVC)" in variables:
+    window_cost = st.number_input("Window retrofit cost (€/sqm)", 0, 500, 300)
+    
+if "Air-to-water pump" in variables:
+    pump_cost = st.number_input("Air-to-water heat pump retrofit cost (€/unit)", 0, 10000, 4000)
 
-
-st.header('Optimização')
-#up = st.selectbox("Tipo de renovação", ["Paredes", "Janelas", "Fonte da sua energia"])
-option = st.radio('Selecione o algoritmo de optimização:',
-                  [#"No optimization",
-                   'NSGAII',
-                   'SPEA2',
-                   'IBEA'])
-n = st.number_input("Número de combinações a explorar pelo algoritmo", 50, 50000, 500)
+if "Efficient AC units" in variables:
+    ac_cost = st.number_input("Efficient AC units retrofit cost (€/unit)", 0, 2000, 700)
+    
+if "Solar panels for DHW" in variables:
+    solar_dhw_cost = st.number_input("Solar panels for DHW retrofit cost (€/unit)", 0, 10000, 2000)
+    
+if "Solar panels for energy production" in variables:
+    solar_energy_cost = st.number_input("Solar panels for energy production retrofit cost (€/unit)", 0, 2000, 600)
+    
 st.write("---")
 
 
-# In[136]:
+# In[175]:
 
 
-problem = Problem(len(df.index), 3)
-problem.types[:] = problem_types
-problem.function = opt_df
+from platypus import *
 
 
-# In[137]:
+# In[176]:
 
 
-def option_opt(option):
-        if option == "NSGAII":
-            algorithm = NSGAII(problem)
-            algorithm.run(n)
-            x = [s.objectives[0] for s in algorithm.result]
-            y = [s.objectives[1] for s in algorithm.result]
-            z = [s.objectives[2] for s in algorithm.result]
-            return x, y, z
-        if option == "SPEA2":
-            algorithm = SPEA2(problem)
-            algorithm.run(n)
-            x = [s.objectives[0] for s in algorithm.result]
-            y = [s.objectives[1] for s in algorithm.result]
-            z = [s.objectives[2] for s in algorithm.result]
-            return x, y, z
-        if option == "IBEA":
-            algorithm = IBEA(problem)
-            algorithm.run(n)
-            x = [s.objectives[0] for s in algorithm.result]
-            y = [s.objectives[1] for s in algorithm.result]
-            z = [s.objectives[2] for s in algorithm.result]
-            return x, y, z
-        else:
-            return print("No optimization selected")
+platypus_vars = []
+vars_columns = []
+for j in sample.index:
+    for i in variables:
+        platypus_vars.append(Integer(0, 1))
+        vars_columns.append(i + " Building " + str(j + 1))
+
+vars_columns.append("Average Energy Needs [kWh/sqm]")
+vars_columns.append("Standard Deviation [kWh/sqm]") 
+vars_columns.append("Cost [€]")  
 
 
-# In[138]:
+# In[177]:
 
 
-results = option_opt(option)
+vars_df = pd.DataFrame(np.array(platypus_vars).reshape(len(sample), len(variables)))
 
 
-# In[139]:
+# In[178]:
 
 
-results_df = pd.DataFrame(results).transpose()
-results_df.columns = ["Energy Consumption kWh/m2", "Standar Deviation kWh/m2", "total cost €"]
+vars_df.columns = variables
 
 
-# In[140]:
+# In[179]:
 
 
-results_df
+from time import time
 
 
-# In[141]:
+# In[229]:
 
 
-# x_IBEA = [s.objectives[0] for s in algorithm_IBEA.result]
-# y_IBEA = [s.objectives[1] for s in algorithm_IBEA.result]
-# z_IBEA = [s.objectives[2] for s in algorithm_IBEA.result]
+def buildings_opt(x):
+    #start = time()
+    sampl = sample.copy()
+    vars_df = pd.DataFrame(np.array(x).reshape(len(sampl), len(variables)))
+    vars_df.columns = variables
+    costs = [0]
+    
+    if "Wall insulation (EPS)" in vars_df.columns:
+        for i in enumerate(vars_df["Wall insulation (EPS)"]):
+            tipo = sampl["Tipo de Imóvel"].iloc[i[0]]
+            npisos = sampl["Número Total de Pisos"].iloc[i[0]]
+            wall_area = sampl["walls_area"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["walls_type"].iloc[i[0]] = 0
+                costs.append(wall_cost*wall_area)
+                
+    if "Floor insulation" in vars_df.columns:
+        for i in enumerate(vars_df["Floor insulation"]):
+            tipo = sampl["Tipo de Imóvel"].iloc[i[0]]
+            npisos = sampl["Número Total de Pisos"].iloc[i[0]]
+            floor_area = sampl["floors_area"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["floors_type"].iloc[i[0]] = 4
+                if tipo == 0:
+                    costs.append(floor_cost*floor_area*npisos)
+                else:
+                    costs.append(floor_cost*floor_area)
+                    
+                
+    if "Roof insulation (EPS)" in vars_df.columns:
+        for i in enumerate(vars_df["Roof insulation (EPS)"]):
+            roof_area = sampl["roofs_area"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["roofs_type"].iloc[i[0]] = 0
+                costs.append(roof_cost*roof_area)
+    
+    if "Window replacement (PVC)" in vars_df.columns:
+        for i in enumerate(vars_df["Window replacement (PVC)"]):
+            window_area = sampl["window_area"].iloc[i[0]]
+            tipo = sampl["Tipo de Imóvel"].iloc[i[0]]
+            npisos = sampl["Número Total de Pisos"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["window_type"].iloc[i[0]] = 9
+                costs.append(window_cost*window_area)
 
-# IBEA_df = pd.DataFrame([x_IBEA, y_IBEA, z_IBEA]).transpose()
-# IBEA_df.columns = ["Energy Consumption kWh/m2", "STD", "total cost €"]
+    
+    if "Air-to-water pump" in vars_df.columns:
+        for i in enumerate(vars_df["Air-to-water pump"]):
+            npisos = sampl["Número Total de Pisos"].iloc[i[0]]
+            tipo = sampl["Tipo de Imóvel"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["dhw_equipment"].iloc[i[0]] = 2
+                sampl["ac_equipment"].iloc[i[0]] = 4
+                if tipo == 0:
+                    sampl["nr_dhw_units"].iloc[i[0]] = npisos
+                    costs.append(pump_cost*npisos)  
+                else:
+                    sampl["nr_dhw_units"].iloc[i[0]] = 1
+                    costs.append(pump_cost)
+
+                
+    if "Efficient AC units" in vars_df.columns:
+        for i in enumerate(vars_df["Efficient AC units"]):
+            npisos = sampl["Número Total de Pisos"].iloc[i[0]]
+            tipologia = sampl["Tipologia"].iloc[i[0]]
+            tipo = sampl["Tipo de Imóvel"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["ac_equipment"].iloc[i[0]] = 4
+                if tipo == 0:
+                    if tipologia == 0:
+                        sampl["nr_ac_units"].iloc[i[0]] = npisos*8
+                        costs.append(ac_cost*8*npisos)
+                        sampl["nr_ac_units"].iloc[i[0]] = npisos*(tipologia)
+                    else:
+                        sampl["nr_ac_units"].iloc[i[0]] = tipologia*npisos
+                        costs.append(ac_cost*npisos*tipologia)
+                else:
+                    if tipologia == 0:
+                        sampl["nr_ac_units"].iloc[i[0]] = 8
+                        costs.append(ac_cost*8*0.15)
+                        
+                    else:
+                        sampl["nr_ac_units"].iloc[i[0]] = tipologia
+                        costs.append(ac_cost*tipologia)
+                    
+    
+    if "Solar panels for DHW" in vars_df.columns:
+        for i in enumerate(vars_df["Solar panels for DHW"]):
+            npisos = sampl["Número Total de Pisos"].iloc[i[0]]
+            tipologia = sampl["Tipologia"].iloc[i[0]]
+            tipo = sampl["Tipo de Imóvel"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["dhw_equipment"].iloc[i[0]] = 4
+                sampl["dhw_source"].iloc[i[0]] = 10
+                if tipo == 0:
+                    sampl["nr_dhw_units"].iloc[i[0]] = npisos
+                    costs.append(solar_dhw_cost*npisos)
+                else:
+                    sampl["nr_dhw_units"].iloc[i[0]] = 1
+                    costs.append(solar_dhw_cost)
+                
+    if "Solar panels for energy production" in vars_df.columns:
+        for i in enumerate(vars_df["Solar panels for energy production"]):
+            npisos = sampl["Número Total de Pisos"].iloc[i[0]]
+            tipologia = sampl["Tipologia"].iloc[i[0]]
+            tipo = sampl["Tipo de Imóvel"].iloc[i[0]]
+            if i[1] == 1:
+                sampl["ac_source"].iloc[i[0]] = 10
+                sampl["dhw_source"].iloc[i[0]] = 10
+                if tipo == 0:
+                    if tipologia == 0:
+                        costs.append(solar_energy_cost*8)
+                    else:
+                        costs.append(solar_energy_cost*tipologia*npisos)
+                else:
+                    if tipologia == 0:
+                        costs.append(solar_energy_cost*8)
+                    else:
+                        sampl["nr_ac_units"].iloc[i[0]] = tipologia
+                        sampl["nr_dhw_units"].iloc[i[0]] = 1
+                        costs.append(solar_energy_cost*tipologia)
+                                         
+    cost = np.sum(costs)
+    preds = et_ntc.predict(sampl)
+    avg = np.average(preds)
+    std = np.std(preds)
+    #end = time()
+    return [avg, std, cost]          
 
 
-# In[142]:
+# In[230]:
 
 
-import plotly.graph_objects as go
-fig = go.Figure()
+algs = ["NSGAII", "NSGAIII", "SPEA2", "IBEA"]
+
+
+# In[231]:
+
+
+st.subheader("Select Optimization Algorithm")
+alg = st.selectbox("Choose the algorithm you want to test", algs, 2)
+
+problem = Problem(len(platypus_vars), 3)
+problem.types[:] = platypus_vars
+problem.function = buildings_opt
+itrs = st.number_input("Number of iterations you wish to test:", 200, value=500)
+if alg == "NSGAII":
+    pop = round(itrs/50)
+    sol = pop
+    algorithm = NSGAII(problem, population_size=pop)
+
+if alg == "SPEA2":
+    pop = round(itrs/50)
+    algorithm = SPEA2(problem, population_size=pop)
+
+if alg == "NSGAIII":
+    divisions = 20
+    algorithm = NSGAIII(problem, divisions_outer=20)
+
+if alg == "IBEA":
+    pop = round(itrs/50)
+    algorithm = IBEA(problem, population_size=pop)
+
+
+# In[271]:
+
+
+col_empty, col_button, col_empty = st.columns(3)
+opt = col_button.button("Start Optimization!")
+
+
+# In[288]:
+
+
+if opt == True:
+    with st.spinner("The increase in the number of iterations increases the execution time. Each iteration takes around 0.02 seconds to complete."):
+        algorithm.run(itrs)
+        nondominated_solutions = nondominated(algorithm.result)
+
+
+# In[279]:
+
+
+if opt == True:
+    global_arr= []
+    for s in nondominated_solutions:
+        for v in enumerate(platypus_vars):
+            if "Integer" in str(v[1]):
+                global_arr.append(v[1].decode(s.variables[v[0]]))
+            else:
+                global_arr.append(round(s.variables[v[0]], 2))
+        global_arr.append(s.objectives[0])
+        global_arr.append(s.objectives[1])
+        global_arr.append(s.objectives[2])
+    final = np.array(global_arr).reshape(len(nondominated_solutions), len(platypus_vars) +3)
+    final_df = pd.DataFrame(final)
+    final_df.columns = vars_columns
+
+
+# In[280]:
+
+
+import plotly.express as px
+if opt == True:                         
+    fig = px.scatter_3d(final_df, 
+                        x="Average Energy Needs [kWh/sqm]", 
+                        y="Standard Deviation [kWh/sqm]", 
+                        z="Cost [€]",
+                        color="Average Energy Needs [kWh/sqm]",
+                        color_continuous_scale=px.colors.diverging.Tealrose)
+
+    fig.update_layout(
+                        autosize=True,
+                        width=1200,
+                        height=800)
+    camera = dict(
+        up=dict(x=0, y=0, z=1.25),
+        center=dict(x=0, y=0, z=0),
+        eye=dict(x=1.25, y=-1.25, z=1)
+    )
+
+    fig.update_layout(scene_camera=camera)
+    st.plotly_chart(fig)
+    #fig.show()
+
+
+# In[281]:
+
+
+def binary_convert(x):
+    if x == 1.0:
+        return True
+    else:
+        return False
+
+
+# In[286]:
+
+
+if opt == True:
+    for i in final_df.drop(["Average Energy Needs [kWh/sqm]", "Standard Deviation [kWh/sqm]", "Cost [€]"],axis=1):
+        final_df[i] = final_df[i].apply(lambda x: binary_convert(x))
+        download_df = final_df.T
+        download_df.columns = ["Solution " + str(i + 1) for i in final_df.index]
+
+
+# In[260]:
+
+
+if opt == True:
+    col_h, col_opt_down, col_i = st.columns(3)
+    @st.cache_data
+    def convert_example(df):
+        return df.to_csv().encode('utf-8')
+
+    example = convert_example(download_df)
+
+    col_opt_down.download_button(label="Download optimum solutions as CSV",
+                                 data=example,
+                                 file_name='optimum_solutions.csv',
+                                 mime='text/csv',)
+
+    st.write("---")
+
+
+# In[262]:
 
 
 
-fig = fig.add_trace(go.Scatter3d(x = results_df["Energy Consumption kWh/m2"],
-                                 y = results_df["Standar Deviation kWh/m2"],
-                                 z = results_df["total cost €"],
-                                 opacity = 0.5,
-                                 mode = "markers",
-                                 name = option,
-                                 marker = dict(size = 4),
-                                 #alphahull = 0,
-                                 showlegend= True))
-fig.add_trace(go.Scatter3d(x = [opt_df(np.repeat(0, 20))[0]],
-                            y = [opt_df(np.repeat(0, 20))[1]],
-                            z = [opt_df(np.repeat(0, 20))[2]],
-                            name = "original",
-                            opacity = 1,
-                            mode = "markers",
-                            marker = dict(size = 0),
-                            #alphahull = -1,
-                            showlegend= True))
-
-fig.add_trace(go.Scatter3d(x = [full_retro[0]],
-                            y =[full_retro[1]],
-                            z = [full_retro[2]],
-                            name = "Full retrofit",
-                            opacity = 1,
-                            mode = "markers",
-                            marker = dict(size = 0),
-                            #alphahull = -1,
-                            showlegend= True))
-
-st.plotly_chart(fig, use_container_width=True, sharing="streamlit")
 
 
-# In[143]:
+# In[264]:
 
 
-fig.show()
+
 
 
 # In[ ]:
